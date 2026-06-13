@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HabitFlow</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<header>
+  <div class="logo">Habit<span>Flow</span></div>
+  <div id="clock">00:00:00</div>
+</header>
+
+<div class="main">
+  <div class="left-panel">
+
+    <div class="form-card">
+      <div class="sec-title">✦ Add New Habit</div>
+      <div class="form-row-3">
+        <div>
+          <label>Habit Name</label>
+          <input id="h-name" type="text" placeholder="e.g. Drink Water"/>
+        </div>
+        <div>
+          <label>Reminder Time</label>
+          <input id="h-time" type="time"/>
+        </div>
+        <div>
+          <label>Category</label>
+          <select id="h-cat">
+            <option value="health">💚 Health</option>
+            <option value="study">📘 Study</option>
+            <option value="fitness">🔥 Fitness</option>
+            <option value="mindset">🧘 Mindset</option>
+            <option value="other">⭐ Other</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>Custom Motivation Message (optional)</label>
+        <input id="h-msg" type="text" placeholder="e.g. Stay hydrated! 💧"/>
+      </div>
+      <div class="sec-title" style="margin-top:14px;margin-bottom:8px;">Pick an Emoji</div>
+      <div class="emoji-row" id="emoji-row"></div>
+      <button class="btn btn-primary" onclick="addHabit()">+ Add Habit</button>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'today')">Today</div>
+      <div class="tab" onclick="switchTab(this,'all')">All Habits</div>
+      <div class="tab" onclick="switchTab(this,'weekly')">Weekly</div>
+    </div>
+
+    <div id="tab-today">
+      <div class="sec-title">📅 Today's Habits</div>
+      <div id="habit-list"><div class="loading">Loading habits...</div></div>
+    </div>
+    <div id="tab-all" style="display:none">
+      <div class="sec-title">📋 All Habits</div>
+      <div id="all-habit-list"></div>
+    </div>
+    <div id="tab-weekly" style="display:none">
+      <div class="sec-title">📊 This Week</div>
+      <div class="week-grid" id="week-grid"></div>
+      <div id="weekly-details"></div>
+    </div>
+
+  </div>
+
+  <div class="sidebar">
+    <div class="ring-wrap">
+      <div class="ring-container">
+        <svg class="ring" width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="10"/>
+          <circle id="ring-circle" cx="60" cy="60" r="50" fill="none" stroke="var(--accent)"
+            stroke-width="10" stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-pct" id="ring-pct">0%</div>
+      </div>
+      <div class="ring-label">Today's Completion</div>
+    </div>
+
+    <div class="sec-title">📈 Stats</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val green" id="s-done">0</div><div class="stat-lbl">Done Today</div></div>
+      <div class="stat-card"><div class="stat-val accent" id="s-total">0</div><div class="stat-lbl">Total Habits</div></div>
+      <div class="stat-card"><div class="stat-val gold" id="s-streak">0</div><div class="stat-lbl">Best Streak 🔥</div></div>
+      <div class="stat-card"><div class="stat-val pink" id="s-pending">0</div><div class="stat-lbl">Pending</div></div>
+    </div>
+
+    <div class="upcoming-card">
+      <div class="sec-title">⏰ Coming Up Next</div>
+      <div id="upcoming-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<div class="modal-bg" id="del-modal" style="display:none">
+  <div class="modal">
+    <h2>Remove Habit?</h2>
+    <p>This habit and all its progress will be permanently deleted.</p>
+    <div class="modal-btns">
+      <button class="btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmDelete()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
