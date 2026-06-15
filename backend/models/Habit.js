@@ -3,42 +3,60 @@ const db = require('../config/db');
 const Habit = {
 
   getAll() {
-    const habits = db.prepare('SELECT * FROM habits ORDER BY time ASC').all();
-    return habits.map(habit => {
-      const logs = db.prepare(
-        'SELECT done_date FROM habit_logs WHERE habit_id = ?'
-      ).all(habit.id);
-      return { ...habit, completedDays: logs.map(l => l.done_date) };
-    });
+    const habits = db.get('habits').value();
+    const logs   = db.get('logs').value();
+    return habits.map(h => ({
+      ...h,
+      completedDays: logs
+        .filter(l => l.habit_id === h.id)
+        .map(l => l.done_date)
+    }));
   },
 
   create({ name, emoji, category, time, message }) {
-    const result = db.prepare(
-      'INSERT INTO habits (name, emoji, category, time, message) VALUES (?, ?, ?, ?, ?)'
-    ).run(name, emoji || '🎯', category || 'other', time, message || '');
-    return db.prepare('SELECT * FROM habits WHERE id = ?').get(result.lastInsertRowid);
+    const id = db.get('nextId').value();
+    const habit = {
+      id, name,
+      emoji:     emoji    || '🎯',
+      category:  category || 'other',
+      time,
+      message:   message  || '',
+      streak:    0,
+      last_done: '',
+      created_at: new Date().toISOString()
+    };
+    db.get('habits').push(habit).write();
+    db.update('nextId', n => n + 1).write();
+    return habit;
   },
 
   markDone(id, date) {
-    const exists = db.prepare(
-      'SELECT id FROM habit_logs WHERE habit_id = ? AND done_date = ?'
-    ).get(id, date);
+    const exists = db.get('logs')
+      .find({ habit_id: id, done_date: date }).value();
+
     if (exists) {
-      db.prepare('DELETE FROM habit_logs WHERE habit_id = ? AND done_date = ?').run(id, date);
-      db.prepare('UPDATE habits SET streak = MAX(0, streak - 1) WHERE id = ?').run(id);
+      db.get('logs')
+        .remove({ habit_id: id, done_date: date }).write();
+      const habit = db.get('habits').find({ id }).value();
+      db.get('habits').find({ id })
+        .assign({ streak: Math.max(0, habit.streak - 1) }).write();
       return { action: 'undone' };
     } else {
-      db.prepare('INSERT INTO habit_logs (habit_id, done_date) VALUES (?, ?)').run(id, date);
-      db.prepare('UPDATE habits SET streak = streak + 1, last_done = ? WHERE id = ?').run(date, id);
+      db.get('logs')
+        .push({ habit_id: id, done_date: date }).write();
+      const habit = db.get('habits').find({ id }).value();
+      db.get('habits').find({ id })
+        .assign({ streak: habit.streak + 1, last_done: date }).write();
       return { action: 'done' };
     }
   },
 
   delete(id) {
-    db.prepare('DELETE FROM habit_logs WHERE habit_id = ?').run(id);
-    db.prepare('DELETE FROM habits WHERE id = ?').run(id);
+    db.get('habits').remove({ id }).write();
+    db.get('logs').remove({ habit_id: id }).write();
     return { deleted: true };
   }
+
 };
 
 module.exports = Habit;
