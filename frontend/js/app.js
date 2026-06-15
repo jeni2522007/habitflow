@@ -1,4 +1,4 @@
-const API = 'https://habitflow-43vt.onrender.com/';
+const API = 'https://habitflow-43vt.onrender.com/api/habits';
 
 let habits        = [];
 let selectedEmoji = '🎯';
